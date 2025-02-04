@@ -69,9 +69,36 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  _buildTextField('Email', false, _emailController),
+                  _buildTextField(
+                    'Email', 
+                    false, 
+                    _emailController, 
+                    Icons.email, // Email icon
+                    (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Email is required';
+                      } else if (!RegExp(r'^[a-z][a-z0-9]*@gmail\.com$')
+                          .hasMatch(value)) {
+                        return 'Enter a valid email with @gmail.com (lowercase, starts with a letter)';
+                      }
+                      return null;
+                    }
+                  ),
                   const SizedBox(height: 20),
-                  _buildTextField('Password', true, _passwordController),
+                  _buildTextField(
+                    'Password', 
+                    true, 
+                    _passwordController, 
+                    Icons.lock, // Password icon
+                    (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Password is required';
+                      } else if (value.length < 6) {
+                        return 'Password must be at least 6 characters long';
+                      }
+                      return null;
+                    }
+                  ),
                   const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.centerRight,
@@ -89,18 +116,32 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 10),
                   _buildButton('Login'),
                   const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => SignupPage()));
-                    },
-                    child: const Text(
-                      "Don't have an account? Sign Up",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 26, 66, 126),
-                        fontFamily: 'Inder',
-                        fontWeight: FontWeight.bold,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Don't have an account? ",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'Inder',
+                        ),
                       ),
-                    ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => SignupPage()));
+                        },
+                        child: const Text(
+                          "SignUp",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 26, 66, 126),
+                            fontFamily: 'Inder',
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -111,7 +152,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField(String label, bool obscureText, TextEditingController controller) {
+  Widget _buildTextField(String label, bool obscureText,
+      TextEditingController controller, IconData icon, String? Function(String?)? validator) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -119,29 +161,18 @@ class _LoginPageState extends State<LoginPage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: 'Enter your $label',
+        prefixIcon: Icon(icon, color: Color.fromARGB(255, 26, 66, 126)), // Added icon
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Color.fromARGB(255, 43, 93, 153), width: 2),
+          borderSide:
+              BorderSide(color: Color.fromARGB(255, 43, 93, 153), width: 2),
           borderRadius: BorderRadius.circular(25),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return '$label cannot be empty';
-        }
-       if (label == 'Email' && !RegExp(r'^[a-z]+@gmail\.com$').hasMatch(value)) {
-  return 'Enter a valid email address';
-
-}
-
-        if (label == 'Password' && value.length < 6) {
-          return 'Password must be at least 6 characters long';
-        }
-        return null;
-      },
+      validator: validator,
     );
   }
 

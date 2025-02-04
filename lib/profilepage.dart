@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(ProfilePage());
-}
+import 'login.dart'; // Import your existing login page
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -23,7 +20,7 @@ class ProfilePage extends StatelessWidget {
             // User Image
             CircleAvatar(
               radius: 60,
-              backgroundImage: AssetImage('assets/images/woman.png'), // Add your image here
+              backgroundImage: AssetImage('assets/images/woman.png'),
             ),
             SizedBox(height: 20),
             // User Email
@@ -40,7 +37,7 @@ class ProfilePage extends StatelessWidget {
                   // Edit Profile Action
                 },
                 icon: Icon(Icons.edit, color: Colors.white),
-                label: Text("Edit Profile", style: TextStyle(color: Colors.white),),
+                label: Text("Edit Profile", style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: Color.fromARGB(255, 94, 165, 227),
@@ -56,10 +53,14 @@ class ProfilePage extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Logout Action
+                  // Navigate to Login Page and remove previous pages from the stack
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
                 },
                 icon: Icon(Icons.logout, color: Colors.white),
-                label: Text("Logout", style: TextStyle(color: Colors.white),),
+                label: Text("Logout", style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: const Color.fromARGB(255, 221, 64, 64),
@@ -72,7 +73,6 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
       ),
-      
     );
- g }
+  }
 }
