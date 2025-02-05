@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:main_project/searchpage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:main_project/signup.dart';
 
 void main() {
   runApp(const MyApp());

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:main_project/signup.dart';
 
 void main() {
@@ -32,6 +33,24 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  // Firebase Authentication for login
+  Future<void> signIn(BuildContext context, String email, String password) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login Successful!")),
+      );
+      Navigator.pushReplacementNamed(context, '/home'); // Redirect to home page
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,36 +88,28 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  _buildTextField(
-                    'Email', 
-                    false, 
-                    _emailController, 
-                    Icons.email, // Email icon
-                    (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Email is required';
-                      } else if (!RegExp(r'^[a-z][a-z0-9]*@gmail\.com$')
-                          .hasMatch(value)) {
-                        return 'Enter a valid email with @gmail.com (lowercase, starts with a letter)';
-                      }
-                      return null;
+                  _buildTextField('Email', false, _emailController,
+                      Icons.email, // Email icon
+                      (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    } else if (!RegExp(r'^[a-z][a-z0-9]*@gmail\.com$')
+                        .hasMatch(value)) {
+                      return 'Enter a valid email with @gmail.com (lowercase, starts with a letter)';
                     }
-                  ),
+                    return null;
+                  }),
                   const SizedBox(height: 20),
-                  _buildTextField(
-                    'Password', 
-                    true, 
-                    _passwordController, 
-                    Icons.lock, // Password icon
-                    (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Password is required';
-                      } else if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
-                      }
-                      return null;
+                  _buildTextField('Password', true, _passwordController,
+                      Icons.lock, // Password icon
+                      (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    } else if (value.length < 6) {
+                      return 'Password must be at least 6 characters long';
                     }
-                  ),
+                    return null;
+                  }),
                   const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.centerRight,
@@ -152,8 +163,12 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField(String label, bool obscureText,
-      TextEditingController controller, IconData icon, String? Function(String?)? validator) {
+  Widget _buildTextField(
+      String label,
+      bool obscureText,
+      TextEditingController controller,
+      IconData icon,
+      String? Function(String?)? validator) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -161,7 +176,8 @@ class _LoginPageState extends State<LoginPage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: 'Enter your $label',
-        prefixIcon: Icon(icon, color: Color.fromARGB(255, 26, 66, 126)), // Added icon
+        prefixIcon:
+            Icon(icon, color: Color.fromARGB(255, 26, 66, 126)), // Added icon
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
         ),
@@ -180,8 +196,7 @@ class _LoginPageState extends State<LoginPage> {
     return ElevatedButton(
       onPressed: () {
         if (_formKey.currentState!.validate()) {
-          // Perform login action
-          print('Login Successful');
+          signIn(context, _emailController.text, _passwordController.text);
         }
       },
       style: ElevatedButton.styleFrom(
@@ -194,7 +209,8 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'Inder'),
+        style:
+            TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'Inder'),
       ),
     );
   }

@@ -1,38 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:main_project/login.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Color.fromARGB(255, 37, 83, 126),
-        hintColor: const Color.fromARGB(255, 36, 68, 85),
-        textTheme: TextTheme(
-          titleLarge: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            fontFamily: 'Inder',
-          ),
-          bodyLarge: TextStyle(
-            fontSize: 18,
-            color: Colors.black,
-            fontFamily: 'Inder',
-          ),
-        ),
-      ),
-      home: const SignupPage(),
-    );
-  }
-}
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -47,6 +15,26 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+
+  Future<void> signUp(BuildContext context, String email, String password) async {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sign Up Successful!")),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +76,7 @@ class _SignupPageState extends State<SignupPage> {
                     'Email', 
                     false, 
                     _emailController, 
-                    Icons.email, // Email Icon
+                    Icons.email, 
                     (value) {
                       if (value == null || value.isEmpty) {
                         return 'Email is required';
@@ -104,7 +92,7 @@ class _SignupPageState extends State<SignupPage> {
                     'Password', 
                     true, 
                     _passwordController, 
-                    Icons.lock, // Password Icon
+                    Icons.lock, 
                     (value) {
                       if (value == null || value.isEmpty) {
                         return 'Password is required';
@@ -119,7 +107,7 @@ class _SignupPageState extends State<SignupPage> {
                     'Confirm Password', 
                     true, 
                     _confirmPasswordController, 
-                    Icons.lock_outline, // Confirm Password Icon
+                    Icons.lock_outline, 
                     (value) {
                       if (value == null || value.isEmpty) {
                         return 'Confirm Password is required';
@@ -182,7 +170,7 @@ class _SignupPageState extends State<SignupPage> {
       cursorColor: Color.fromARGB(255, 26, 66, 126),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Color.fromARGB(255, 26, 66, 126)), // Icon Added
+        prefixIcon: Icon(icon, color: Color.fromARGB(255, 26, 66, 126)),
         labelStyle: TextStyle(color: Colors.black, fontFamily: 'Inder'),
         hintText: 'Enter your $label',
         hintStyle: TextStyle(color: Colors.grey, fontFamily: 'Inder'),
@@ -204,7 +192,7 @@ class _SignupPageState extends State<SignupPage> {
     return ElevatedButton(
       onPressed: () {
         if (_formKey.currentState!.validate()) {
-          // Handle successful validation
+          signUp(context, _emailController.text, _passwordController.text);
         }
       },
       style: ElevatedButton.styleFrom(
