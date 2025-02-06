@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:main_project/signup.dart';
+import 'package:main_project/searchpage.dart'; // Make sure to import the DictionarySearchPage
 
 void main() {
   runApp(const MyApp());
@@ -37,17 +38,30 @@ class _LoginPageState extends State<LoginPage> {
   // Firebase Authentication for login
   Future<void> signIn(BuildContext context, String email, String password) async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+      // Attempt to sign in with Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login Successful!")),
-      );
-      Navigator.pushReplacementNamed(context, '/home'); // Redirect to home page
+
+      // Check if the user has verified their email
+      if (userCredential.user!.emailVerified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login Successful!")),
+        );
+        // Route to DictionarySearchPage after successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please verify your email first.")),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Login Failed: $e")),
       );
     }
   }
@@ -55,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(163, 200, 236, 1),
+      backgroundColor: const Color.fromRGBO(163, 200, 236, 1),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -68,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                 BoxShadow(
                   color: Colors.black.withOpacity(0.15),
                   blurRadius: 25,
-                  offset: Offset(0, 15),
+                  offset: const Offset(0, 15),
                 ),
               ],
             ),
@@ -172,21 +186,21 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      cursorColor: Color.fromARGB(255, 26, 66, 126),
+      cursorColor: const Color.fromARGB(255, 26, 66, 126),
       decoration: InputDecoration(
         labelText: label,
         hintText: 'Enter your $label',
         prefixIcon:
-            Icon(icon, color: Color.fromARGB(255, 26, 66, 126)), // Added icon
+            Icon(icon, color: const Color.fromARGB(255, 26, 66, 126)), // Added icon
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide:
-              BorderSide(color: Color.fromARGB(255, 43, 93, 153), width: 2),
+              const BorderSide(color: Color.fromARGB(255, 43, 93, 153), width: 2),
           borderRadius: BorderRadius.circular(25),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
       validator: validator,
     );
@@ -200,8 +214,8 @@ class _LoginPageState extends State<LoginPage> {
         }
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color.fromARGB(255, 26, 66, 126),
-        padding: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+        backgroundColor: const Color.fromARGB(255, 26, 66, 126),
+        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
         ),
@@ -210,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Text(
         text,
         style:
-            TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'Inder'),
+            const TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'Inder'),
       ),
     );
   }

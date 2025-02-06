@@ -13,33 +13,55 @@ class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _isLoading = false;
 
   Future<void> signUp(BuildContext context, String email, String password) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Send email verification
+      await userCredential.user!.sendEmailVerification();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Sign Up Successful!")),
+        const SnackBar(content: Text("Sign Up Successful! Please verify your email.")),
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+
+      // Redirect to login page
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+
+    } on FirebaseAuthException catch (e) {
+      String message = "Signup Failed!";
+      if (e.code == 'email-already-in-use') {
+        message = "Email is already in use!";
+      } else if (e.code == 'weak-password') {
+        message = "Password must be at least 6 characters!";
+      } else if (e.code == 'invalid-email') {
+        message = "Invalid email format!";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(163, 200, 236, 1),
+      backgroundColor: const Color.fromRGBO(163, 200, 236, 1),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -52,7 +74,7 @@ class _SignupPageState extends State<SignupPage> {
                 BoxShadow(
                   color: Colors.black.withOpacity(0.15),
                   blurRadius: 25,
-                  offset: Offset(0, 15),
+                  offset: const Offset(0, 15),
                 ),
               ],
             ),
@@ -73,26 +95,25 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   const SizedBox(height: 40),
                   _buildTextField(
-                    'Email', 
-                    false, 
-                    _emailController, 
-                    Icons.email, 
+                    'Email',
+                    false,
+                    _emailController,
+                    Icons.email,
                     (value) {
                       if (value == null || value.isEmpty) {
                         return 'Email is required';
-                      } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$')
-                          .hasMatch(value)) {
+                      } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$').hasMatch(value)) {
                         return 'Enter a valid email with @gmail.com';
                       }
                       return null;
-                    }
+                    },
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
-                    'Password', 
-                    true, 
-                    _passwordController, 
-                    Icons.lock, 
+                    'Password',
+                    true,
+                    _passwordController,
+                    Icons.lock,
                     (value) {
                       if (value == null || value.isEmpty) {
                         return 'Password is required';
@@ -100,14 +121,14 @@ class _SignupPageState extends State<SignupPage> {
                         return 'Password must be at least 6 characters long';
                       }
                       return null;
-                    }
+                    },
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
-                    'Confirm Password', 
-                    true, 
-                    _confirmPasswordController, 
-                    Icons.lock_outline, 
+                    'Confirm Password',
+                    true,
+                    _confirmPasswordController,
+                    Icons.lock_outline,
                     (value) {
                       if (value == null || value.isEmpty) {
                         return 'Confirm Password is required';
@@ -115,7 +136,7 @@ class _SignupPageState extends State<SignupPage> {
                         return 'Passwords do not match';
                       }
                       return null;
-                    }
+                    },
                   ),
                   const SizedBox(height: 20),
                   _buildButton('Sign Up'),
@@ -132,9 +153,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => LoginPage())
-                          );
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoginPage()));
                         },
                         child: const Text(
                           "Login",
@@ -158,31 +177,30 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Widget _buildTextField(
-    String label, 
+    String label,
     bool obscureText,
     TextEditingController controller,
-    IconData icon, 
-    String? Function(String?)? validator
+    IconData icon,
+    String? Function(String?)? validator,
   ) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      cursorColor: Color.fromARGB(255, 26, 66, 126),
+      cursorColor: const Color.fromARGB(255, 26, 66, 126),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Color.fromARGB(255, 26, 66, 126)),
-        labelStyle: TextStyle(color: Colors.black, fontFamily: 'Inder'),
+        prefixIcon: Icon(icon, color: const Color.fromARGB(255, 26, 66, 126)),
+        labelStyle: const TextStyle(color: Colors.black, fontFamily: 'Inder'),
         hintText: 'Enter your $label',
-        hintStyle: TextStyle(color: Colors.grey, fontFamily: 'Inder'),
+        hintStyle: const TextStyle(color: Colors.grey, fontFamily: 'Inder'),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide:
-              BorderSide(color: Color.fromARGB(255, 43, 93, 153), width: 2),
+          borderSide: const BorderSide(color: Color.fromARGB(255, 43, 93, 153), width: 2),
           borderRadius: BorderRadius.circular(25),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
       validator: validator,
     );
@@ -190,23 +208,25 @@ class _SignupPageState extends State<SignupPage> {
 
   Widget _buildButton(String text) {
     return ElevatedButton(
-      onPressed: () {
-        if (_formKey.currentState!.validate()) {
-          signUp(context, _emailController.text, _passwordController.text);
-        }
-      },
+      onPressed: _isLoading
+          ? null
+          : () {
+              signUp(context, _emailController.text, _passwordController.text);
+            },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color.fromARGB(255, 26, 66, 126),
-        padding: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+        backgroundColor: const Color.fromARGB(255, 26, 66, 126),
+        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
         ),
         elevation: 5,
       ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'Inder'),
-      ),
+      child: _isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : Text(
+              text,
+              style: const TextStyle(fontSize: 20, color: Colors.white, fontFamily: 'Inder'),
+            ),
     );
   }
 }

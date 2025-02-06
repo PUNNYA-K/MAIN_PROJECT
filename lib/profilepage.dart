@@ -6,10 +6,11 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontFamily:'WendyOne')),
         backgroundColor: Color.fromARGB(255, 94, 165, 227),
         centerTitle: true,
         elevation: 5,
+        automaticallyImplyLeading: false, // Removes the back button
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
